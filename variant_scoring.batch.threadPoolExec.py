@@ -12,7 +12,6 @@ from alphagenome.models import dna_client, variant_scorers
 
 # Configuration
 INPUT_FILE = "Data_S1.xlsx" # path to the MVP study file downloaded from https://datadryad.org/dataset/doi:10.5061/dryad.zgmsbcck4
-API_KEY = "AIzaSyDgqGhTP0AbyuUY1mracI15RqYcAranJUE"  
 PIP_THRESHOLD = 0.95 # threshold for filtering variants by PIP from the MVP study
 OUTPUT_DIR = "predictions" # directory to save the predictions to
 MAX_WORKERS = 25  # Number of parallel threads
