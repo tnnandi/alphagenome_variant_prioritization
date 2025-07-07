@@ -1,10 +1,10 @@
 # MVP AlphaGenome Variant Scoring Pipeline
 
-This repository contains a comprehensive pipeline for scoring genetic variants from the MVP (Million Veteran Program) study using AlphaGenome, a deep learning model for genomic predictions. The pipeline includes variant scoring, track aggregation, ranking, and visualization capabilities.
+This repository contains a comprehensive pipeline for scoring genetic variants from the MVP (Million Veteran Program) study using [AlphaGenome](https://github.com/google-deepmind/alphagenome/tree/main). The pipeline includes variant scoring, track aggregation, ranking, and visualization capabilities.
 
 ## Overview
 
-The pipeline processes MVP variants with high posterior inclusion probability (PIP > 0.95) and uses AlphaGenome to predict their effects on various genomic tracks including RNA-seq, CAGE, ATAC-seq, ChIP-seq, and more. The results are aggregated and ranked based on quantile scores to identify the most impactful variants.
+The pipeline processes MVP variants with high posterior inclusion probability (PIP > 0.95) and uses AlphaGenome to predict their effects on various genomic tracks like RNA-seq, CAGE, ATAC-seq, and ChIP-seq. The results are aggregated and ranked based on quantile scores to identify the most impactful variants.
 
 ## Pipeline Components
 
