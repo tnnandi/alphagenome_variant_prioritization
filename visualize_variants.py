@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 from pdb import set_trace
 
-API_KEY = "AIzaSyDgqGhTP0AbyuUY1mracI15RqYcAranJUE" 
-variant_file = "predictions/chr_14_101293528_A_C_EUR_15361_scores.csv"
+variant_file = "predictions/chr_14_101293528_A_C_EUR_15361_scores.csv" 
 
 dna_model = dna_client.create(API_KEY)
 
@@ -156,5 +155,4 @@ variant_string = scores_df['variant_id'].iloc[0]
 variant = genome.Variant.from_str(variant_string)
 print(f"Variant: {variant}")
 
-# Remove the debug breakpoint
-# set_trace()
+set_trace()
