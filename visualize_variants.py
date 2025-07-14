@@ -1,4 +1,5 @@
 # code to visualize the variants
+import os
 from alphagenome import colab_utils
 from alphagenome.data import gene_annotation, genome, track_data, transcript
 from alphagenome.models import dna_client
@@ -7,8 +8,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pdb import set_trace
+from datetime import datetime
 
-variant_file = "predictions/chr_14_101293528_A_C_EUR_15361_scores.csv" 
+date_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+# Get API key from environment variable
+API_KEY = os.getenv('ALPHAGENOME_API_KEY')
+if not API_KEY:
+    raise ValueError("ALPHAGENOME_API_KEY environment variable is not set. Please set it with your API key.")
+
+variant_file = "predictions/chr_14_101293528_A_C_EUR_15361_scores.csv" # the top variant in the variant_quantile_summary_parallel.csv file
 
 dna_model = dna_client.create(API_KEY)
 
@@ -78,6 +87,7 @@ interval = genome.Interval(chromosome, interval_center - 50000, interval_center 
 )
 
 print(f"Using interval: {interval}")
+# set_trace()
 
 # Convert output types to DNA client output types
 output_type_mapping = {
@@ -104,32 +114,64 @@ output = dna_model.predict_interval(
 # Extract the longest transcripts per gene for this interval.
 longest_transcripts = longest_transcript_extractor.extract(interval)
 
-# Build plot components
+# --- Filter output.rna_seq to only top 10 tracks ---
+
+# Get the set of (track_name, track_strand) for the top tracks
+top_track_keys = set(zip(top_scores['track_name'], top_scores['track_strand']))
+
+def filter_trackdata_to_top(trackdata):
+    # Filter the metadata DataFrame to only rows in top_track_keys
+    mask = [
+        (row['name'], row['strand']) in top_track_keys
+        for _, row in trackdata.metadata.iterrows()
+    ]
+    # If none match, return None
+    if not any(mask):
+        return None
+    # Filter values and metadata
+    import numpy as np
+    filtered_metadata = trackdata.metadata[mask].reset_index(drop=True)
+    filtered_values = trackdata.values[:, mask] if trackdata.values.ndim == 2 else trackdata.values[mask]
+    # Rebuild TrackData object
+    from alphagenome.data.track_data import TrackData
+    return TrackData(
+        values=filtered_values,
+        metadata=filtered_metadata,
+        resolution=trackdata.resolution,
+        interval=trackdata.interval,
+        uns=trackdata.uns
+    )
+
+# Apply filter to rna_seq, cage, atac if present
+filtered_rna_seq = filter_trackdata_to_top(output.rna_seq) if hasattr(output, 'rna_seq') and output.rna_seq is not None else None
+filtered_cage = filter_trackdata_to_top(output.cage) if hasattr(output, 'cage') and output.cage is not None else None
+filtered_atac = filter_trackdata_to_top(output.atac) if hasattr(output, 'atac') and output.atac is not None else None
+
+# --- Build plot components with only filtered tracks ---
 plot_components_list = [
     plot_components.TranscriptAnnotation(longest_transcripts),
 ]
 
-# Add tracks for each output type
-if hasattr(output, 'rna_seq') and output.rna_seq is not None:
+if filtered_rna_seq is not None:
     plot_components_list.append(
         plot_components.Tracks(
-            tdata=output.rna_seq,
+            tdata=filtered_rna_seq,
             ylabel_template='RNA_SEQ: {biosample_name} ({strand})\n{name}',
         )
     )
 
-if hasattr(output, 'cage') and output.cage is not None:
+if filtered_cage is not None:
     plot_components_list.append(
         plot_components.Tracks(
-            tdata=output.cage,
+            tdata=filtered_cage,
             ylabel_template='CAGE: {biosample_name} ({strand})\n{name}',
         )
     )
 
-if hasattr(output, 'atac') and output.atac is not None:
+if filtered_atac is not None:
     plot_components_list.append(
         plot_components.Tracks(
-            tdata=output.atac,
+            tdata=filtered_atac,
             ylabel_template='ATAC: {biosample_name} ({strand})\n{name}',
         )
     )
@@ -142,8 +184,8 @@ plot = plot_components.plot(
     title=f'Predicted tracks for variant chr14:100827191:A>C\nTop absolute quantile scores from {len(top_scores)} tracks',
 )
 
-plot.savefig("plot_top_quantile_scores.png", dpi=300, bbox_inches='tight')
-print("Plot saved as plot_top_quantile_scores.png")
+plot.savefig(f"plot_top_quantile_scores_{date_time}.png", dpi=300, bbox_inches='tight')
+print(f"Plot saved as plot_top_quantile_scores_{date_time}.png")
 
 # Print gene names in the region
 gene_names = [t.info['gene_name'] for t in longest_transcripts if t.strand == '+']
