@@ -69,7 +69,11 @@ SEQUENCE_SIZE = '1MB'        # Sequence length for scoring
   - ChIP-seq tracks
 - Interactive visualization with gene annotations
 
-**Output**: High-resolution PNG plots showing genomic context and predicted effects.
+**Output**: plots showing genomic context and ALT/REF tracks.
+
+### Sample visualization
+![Visualizing top 10 tracks for chr_17_7571752_T_G_EUR](Figs/zoom_5kb.png)
+
 
 ## Data Sources
 
