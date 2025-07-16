@@ -10,6 +10,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed # for parallel e
 from alphagenome.data import genome
 from alphagenome.models import dna_client, variant_scorers
 
+# Get API key from environment variable
+API_KEY = os.getenv('ALPHAGENOME_API_KEY')
+if not API_KEY:
+    raise ValueError("ALPHAGENOME_API_KEY environment variable is not set. Please set it with your API key.")
+
 # Configuration
 INPUT_FILE = "Data_S1.xlsx" # path to the MVP study file downloaded from https://datadryad.org/dataset/doi:10.5061/dryad.zgmsbcck4
 PIP_THRESHOLD = 0.95 # threshold for filtering variants by PIP from the MVP study
